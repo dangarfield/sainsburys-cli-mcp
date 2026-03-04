@@ -1,0 +1,23 @@
+{
+  "mcpServers": {
+    "sainsburys-cli-mcp": {
+      "command": "npx",
+      "args": [
+        "tsx",
+        "/Users/Dan.Garfield/code/uk-grocery-cli/src/mcp-server.ts"
+      ],
+      "env": {},
+      "disabled": false,
+      "autoApprove": [
+        "sainsburys_login",
+        "sainsburys_search",
+        "sainsburys_list",
+        "sainsburys_basket",
+        "sainsburys_slots",
+        "sainsburys_order_amend",
+        "sainsburys_checkout",
+        "sainsburys_orders"
+      ]
+    }
+  }
+}

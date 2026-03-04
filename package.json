@@ -1,17 +1,17 @@
 {
-  "name": "uk-grocery-cli",
+  "name": "sainsburys-cli-mcp",
   "version": "2.0.0",
-  "description": "Multi-supermarket grocery CLI for UK. Sainsbury's, Ocado, and more. Built for AI agents.",
+  "description": "Unofficial Sainsbury's grocery CLI + MCP server. Built for AI agents.",
   "type": "module",
   "main": "dist/cli.js",
   "bin": {
-    "groc": "./dist/cli.js",
-    "groc-mcp": "./dist/mcp-server.js"
+    "sains": "./dist/cli.js",
+    "sains-mcp": "./dist/mcp-server.js"
   },
   "scripts": {
     "build": "tsc",
-    "dev": "ts-node src/cli.ts",
-    "groc": "ts-node src/cli.ts",
+    "dev": "tsx src/cli.ts",
+    "sains": "tsx src/cli.ts",
     "setup": "./setup.sh"
   },
   "keywords": [
@@ -32,18 +32,19 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/abracadabra50/uk-grocery-cli"
+    "url": "https://github.com/dangarfield/sainsburys-cli-mcp"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",
     "axios": "^1.6.0",
     "chalk": "^4.1.2",
     "commander": "^11.0.0",
+    "dotenv": "^17.3.1",
     "playwright": "^1.40.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
-    "ts-node": "^10.9.0",
+    "tsx": "^4.7.0",
     "typescript": "^5.0.0"
   }
 }
