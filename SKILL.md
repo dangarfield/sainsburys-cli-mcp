@@ -5,7 +5,7 @@ license: MIT
 compatibility: Node.js 18+, TypeScript, Playwright for auth. UK only (Sainsbury's delivery areas).
 metadata:
   author: dangarfield
-  version: "2.0.0"
+  version: "3.0.0"
   repository: https://github.com/dangarfield/sainsburys-cli-mcp
   tags: [groceries, sainsburys, uk, shopping, automation, cli, mcp, agent-tool]
 allowed-tools: Bash({baseDir}/node:*), Bash(pnpm:run:sains:*)
@@ -22,12 +22,14 @@ CLI + MCP server for Sainsbury's UK grocery automation. Built for AI agents.
 ## When to Use This Skill
 
 Trigger when users:
-- Want to plan meals or discuss recipes
-- Need to order groceries or check prices
-- Want to manage their Sainsbury's basket
-- Need to book delivery slots or checkout
-- Ask "what's for dinner?" or "plan my weekly shop"
-- Want to check or amend an existing order
+- Want to search for products or check prices at Sainsbury's
+- Need to add, remove, or review items in their basket
+- Ask to check their basket, review their shop, or see what's missing
+- Want to book, change, or view delivery slots
+- Need to checkout or place an order
+- Want to view or amend an existing order
+- Ask to manage their shopping list (add, remove, clear)
+- Mention their weekly shop or groceries
 
 ---
 

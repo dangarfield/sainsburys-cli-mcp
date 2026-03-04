@@ -203,7 +203,7 @@ Copy to your skills directory. The `SKILL.md` frontmatter tells the agent when t
 cp -r sainsburys-cli-mcp /path/to/agent/skills/
 ```
 
-The agent loads the skill when users mention groceries, meal planning, or Sainsbury's.
+The agent loads the skill when users mention their basket, shopping list, delivery slots, orders, or Sainsbury's.
 
 ### Slack Bots (Pi / Mom)
 
@@ -218,15 +218,24 @@ await sendBlocks([{
 }]);
 ```
 
-### Meal Planning Flow
+### Automated Weekly Shopping
 
-The CLI doesn't do meal planning — your agent does. Typical flow:
+The real power is the full loop. Throughout the week, tell your agent what you need in plain language:
 
-1. Agent plans meals and extracts ingredients
-2. For each ingredient: `pnpm sains search "{ingredient}"`
-3. Agent picks best match, adds to basket: `pnpm sains basket add {id}`
-4. Agent reviews: `pnpm sains basket` (shows missing items from habits)
-5. Book slot + checkout
+> "Add Dan's deodorant"
+> "We need honey for cereal"
+> "Running low on bananas"
+
+Your agent adds these to the local shopping list via `sainsburys_list`. They don't need to be exact product names.
+
+When it's time to order, your agent (you can schedule it):
+1. Views the basket (`sainsburys_basket`) — this pulls in your shopping list, order history, and frequently bought items
+2. Matches shopping list entries to real products by searching and suggests them to you
+3. Adds approved items to the basket
+4. Flags anything from your usual shop that's missing
+5. Books a delivery slot and checks out
+
+If you forget something after ordering, amend the order (`sainsburys_order_amend`), add the item, and checkout again.
 
 ### Error Handling
 
@@ -274,8 +283,7 @@ sainsburys-cli-mcp/
 │   ├── commands/handlers.ts   # All command logic (shared by CLI + MCP)
 │   ├── cli.ts                 # CLI entry point
 │   └── mcp-server.ts          # MCP server entry point
-├── SKILL.md                   # Open skills format
-└── TODO.md                    # Current status
+└── SKILL.md                   # Open skills format
 ```
 
 ## Authentication Notes
@@ -283,6 +291,7 @@ sainsburys-cli-mcp/
 - Login uses Playwright browser automation
 - SMS MFA is required on new logins — pass the code via `sains login --code 123456`
 - Sessions last ~7 days, then auto-relogin kicks in using saved credentials
+- Logging in on the Sainsbury's website invalidates the CLI session tokens, but the CLI auto-relogins when needed
 - Session stored in `~/.sainsburys/session.json`
 - `wcauthtoken` extracted automatically from cookies for API auth
 
@@ -296,11 +305,10 @@ sainsburys-cli-mcp/
 ## Known Limitations
 
 - **Sainsbury's only** — Ocado/Tesco not yet implemented
-- **UK only** — Sainsbury's delivery areas
+- **UK only** — Sainsbury's delivery areas, uses your existing preferred location
 - **MFA required** on every new login (SMS code)
 - **Checkout** needs proper implementation (basic flow works)
 - **Order amend discard** — no way to cancel an amend yet (API endpoint unknown)
-- **No `--json` flag** — output is human-readable text
 
 ## Development
 
