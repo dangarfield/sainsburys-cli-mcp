@@ -74,6 +74,7 @@ pnpm sains orders <order-uid>              # View specific order with items
 # Amend order
 pnpm sains amend-order                     # Amend most recent
 pnpm sains amend-order <order-uid>         # Amend specific
+pnpm sains amend-order cancel              # Discard changes, revert order
 
 # Shopping list (offline)
 pnpm sains list                            # Show

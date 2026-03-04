@@ -7,6 +7,10 @@ import * as readline from 'readline';
 const CONFIG_DIR = path.join(os.homedir(), '.sainsburys');
 const SESSION_FILE = path.join(CONFIG_DIR, 'session.json');
 
+function isDebugMode(): boolean {
+  return fs.existsSync(path.join(CONFIG_DIR, 'DEBUG'));
+}
+
 export interface SessionData {
   cookies: any[];
   expiresAt: string;
@@ -16,7 +20,7 @@ export interface SessionData {
 export async function login(email: string, password: string): Promise<SessionData> {
   console.log('🔐 Logging in to Sainsbury\'s...');
   
-  const browser = await chromium.launch({ headless: false });
+  const browser = await chromium.launch({ headless: !isDebugMode() });
   const context = await browser.newContext({
     userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
   });

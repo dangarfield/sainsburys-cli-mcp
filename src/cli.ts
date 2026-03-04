@@ -74,9 +74,16 @@ program
   .action((orderUid, options) => run(() => handleOrders({ order_uid: orderUid, limit: parseInt(options.limit, 10) })));
 
 program
-  .command('amend-order [order-uid]')
-  .description('Enter amend mode for a placed order')
-  .action((orderUid) => run(() => handleAmendOrder({ order_uid: orderUid })));
+  .command('amend-order [action] [order-uid]')
+  .description('Amend a placed order: amend (default) or cancel to discard changes')
+  .action((action, orderUid) => {
+    // If first arg looks like a UID (not 'amend' or 'cancel'), treat it as order_uid
+    if (action && action !== 'amend' && action !== 'cancel') {
+      orderUid = action;
+      action = 'amend';
+    }
+    return run(() => handleAmendOrder({ action: action || 'amend', order_uid: orderUid }));
+  });
 
 program
   .command('list [action] [args...]')

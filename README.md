@@ -138,9 +138,10 @@ sains orders <order-uid>           # View specific order with all items
 ```bash
 sains amend-order                  # Amend most recent scheduled order
 sains amend-order <order-uid>      # Amend specific order
+sains amend-order cancel           # Discard changes, revert order to original state
 ```
 
-After amending, use basket commands to modify items, then checkout to confirm.
+After amending, use basket commands to modify items, then checkout to confirm. Use `cancel` to discard all changes.
 
 ### Shopping List (Offline)
 
@@ -169,7 +170,7 @@ The CLI also runs as an MCP server for use with Claude Desktop, Kiro, or any MCP
 | `sainsburys_slots` | List, book, or change delivery slots |
 | `sainsburys_checkout` | Checkout (dry-run or real) |
 | `sainsburys_orders` | List orders or view specific order details |
-| `sainsburys_order_amend` | Enter amend mode for a placed order |
+| `sainsburys_order_amend` | Enter or cancel amend mode for a placed order |
 | `sainsburys_list` | Manage offline shopping list |
 
 ## Agent Integration
@@ -302,13 +303,24 @@ sainsburys-cli-mcp/
 - The CLI never completes payment — it navigates to the payment page and stops
 - Session files are git-ignored
 
+## Debug Mode
+
+Create a file at `~/.sainsburys/DEBUG` to enable debug mode:
+
+```bash
+touch ~/.sainsburys/DEBUG    # enable
+rm ~/.sainsburys/DEBUG       # disable
+```
+
+Currently this shows the Playwright browser window (headless when off, visible when on). May control additional debug behaviour in future.
+
 ## Known Limitations
 
 - **Sainsbury's only** — Ocado/Tesco not yet implemented
 - **UK only** — Sainsbury's delivery areas, uses your existing preferred location
-- **MFA required** on every new login (SMS code)
+- **MFA required** on new devices and sporadic logins (SMS code - handled through agent though)
 - **Checkout** needs proper implementation (basic flow works)
-- **Order amend discard** — no way to cancel an amend yet (API endpoint unknown)
+
 
 ## Development
 

@@ -102,10 +102,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: 'sainsburys_order_amend',
-      description: 'Enter amend mode for a placed order. This turns the order into a logical basket so you can add/remove items using the basket tools. Only works on scheduled orders before cutoff. After amending, use basket tools to modify items. IMPORTANT: You MUST call this before using sainsburys_basket with action "add" or "remove" if the user wants to modify an active order. Without amending first, basket changes will NOT affect the order. After making changes, the user MUST checkout (sainsburys_checkout) to confirm the amended order — amendments are time-limited.',
+      description: 'Enter or cancel amend mode for a placed order. Use action "amend" (default) to enter amend mode — this turns the order into a logical basket so you can add/remove items using the basket tools. Use action "cancel" to discard ALL changes made during the amend session and revert the order to its original state — use this when the user wants to undo/discard/cancel their amendments. Only works on scheduled orders before cutoff. IMPORTANT: You MUST call this with action "amend" before using sainsburys_basket with action "add" or "remove" if the user wants to modify an active order. Without amending first, basket changes will NOT affect the order. After making changes, the user MUST checkout (sainsburys_checkout) to confirm the amended order — amendments are time-limited. To cancel/discard/undo amendments instead of checking out, call this tool with action "cancel".',
       inputSchema: {
         type: 'object',
         properties: {
+          action: { type: 'string', enum: ['amend', 'cancel'], description: 'Action to perform: "amend" (default) enters amend mode, "cancel" discards changes and reverts the order to its original state.', default: 'amend' },
           order_uid: { type: 'string', description: 'Order UID to amend. If not provided, amends the active (most recent scheduled) order.' },
         },
       },

@@ -507,4 +507,24 @@ export class SainsburysProvider implements GroceryProvider {
     const response = await this.client.post(`/order/v1/order/${orderUid}/amend`);
     return response.data;
   }
+  /**
+   * Get the current order status, including amend mode flag.
+   * GET /order/v1/order/status
+   */
+  async getOrderStatus(): Promise<{ order_uid?: string; is_in_amend_mode: boolean; is_cutoff?: boolean; cutoff_time?: string; slot_start_time?: string; slot_end_time?: string; order_type?: string; total?: number } | null> {
+    try {
+      const response = await this.client.get('/order/v1/order/status');
+      return response.data || null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Cancel (discard) an in-progress order amendment.
+   * DELETE /order/v1/order/amend
+   */
+  async cancelAmendOrder(): Promise<void> {
+    await this.client.delete('/order/v1/order/amend');
+  }
 }

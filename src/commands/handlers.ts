@@ -205,6 +205,7 @@ export async function handleBasket(args: BasketArgs): Promise<HandlerResult & { 
   }
 
   const activeOrder = await sainsburys.getActiveOrder?.();
+  const orderStatus = await sainsburys.getOrderStatus?.();
   const basket = await provider.getBasket();
   const habits = listManager.getHabits();
   const shoppingList = listManager.getShoppingList();
@@ -235,6 +236,7 @@ export async function handleBasket(args: BasketArgs): Promise<HandlerResult & { 
       total: activeOrder.order.total,
       slot_start_time: activeOrder.order.slot_start_time,
       cutoff_time: activeOrder.order.cutoff_time,
+      is_in_amend_mode: orderStatus?.is_in_amend_mode ?? false,
       items: activeOrder.items,
     } : null,
     basket: {
@@ -273,11 +275,30 @@ export async function handleBasket(args: BasketArgs): Promise<HandlerResult & { 
 function formatBasketView(data: any): string {
   let t = '';
 
+  // Status line — always first
+  const hasOrder = !!data.active_order;
+  const hasBasketItems = data.basket.items.length > 0;
+  const isAmend = data.active_order?.is_in_amend_mode === true;
+
+  if (isAmend) {
+    t += `🔄 STATUS: AMEND MODE — Order #${data.active_order.order_uid} is being amended. Basket changes will modify this order. Checkout REQUIRED to confirm.\n\n`;
+  } else if (hasOrder) {
+    t += `📦 STATUS: SCHEDULED ORDER — Order #${data.active_order.order_uid} is placed. Call sainsburys_order_amend FIRST before modifying.\n\n`;
+  } else if (hasBasketItems) {
+    t += `🛒 STATUS: BASKET — No placed order. Items are in a fresh basket.\n\n`;
+  } else {
+    t += `🫙 STATUS: EMPTY BASKET — No order, no items.\n\n`;
+  }
+
   // Active order
   if (data.active_order) {
     const ao = data.active_order;
     const slotDate = ao.slot_start_time?.split('T')[0] || '';
-    t += `📦 ACTIVE ORDER #${ao.order_uid}\n`;
+    t += `📦 ACTIVE ORDER #${ao.order_uid}`;
+    if (ao.is_in_amend_mode) {
+      t += ` ✏️ AMEND MODE`;
+    }
+    t += `\n`;
     t += `   Delivery: ${slotDate}, £${ao.total}\n`;
     t += `   Cutoff: ${ao.cutoff_time}\n`;
     const totalUnits = ao.items.reduce((sum: number, item: any) => sum + (item.quantity || 1), 0);
@@ -508,10 +529,17 @@ export async function handleOrders(args: OrdersArgs): Promise<HandlerResult> {
 
 export interface AmendOrderArgs {
   order_uid?: string;
+  action?: 'amend' | 'cancel';
 }
 
 export async function handleAmendOrder(args: AmendOrderArgs): Promise<HandlerResult> {
   const provider = getProvider() as any;
+  const action = args.action || 'amend';
+
+  if (action === 'cancel') {
+    await provider.cancelAmendOrder();
+    return { text: '✅ Amend cancelled — changes discarded. Order reverted to its original state.' };
+  }
 
   let uid = args.order_uid;
   if (!uid) {

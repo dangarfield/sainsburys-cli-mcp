@@ -16,6 +16,15 @@ const CONFIG_DIR = path.join(os.homedir(), '.sainsburys');
 const SESSION_FILE = path.join(CONFIG_DIR, 'session.json');
 const CREDENTIALS_FILE = path.join(CONFIG_DIR, 'credentials.json');
 
+/**
+ * Debug mode: enabled by creating a file at ~/.sainsburys/DEBUG
+ * Currently toggles Playwright headless mode (headless when debug is off, visible when on).
+ * May control additional debug behaviour in future.
+ */
+function isDebugMode(): boolean {
+  return fs.existsSync(path.join(CONFIG_DIR, 'DEBUG'));
+}
+
 const MFA_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
 
 // ─── Parked browser state ──────────────────────────────────
@@ -284,8 +293,9 @@ export async function withBrowserSession<T>(
   targetUrl: string,
   continuation: (page: Page) => Promise<T>,
 ): Promise<T | MfaRequiredResult> {
+  const debug = isDebugMode();
   const browser = await chromium.launch({
-    headless: false,
+    headless: !debug,
     args: ['--disable-blink-features=AutomationControlled'],
   });
 
