@@ -27,6 +27,7 @@ coverage/
 # Environment
 .env
 .env.local
+.kiro
 
 # Temp
 *.tmp

@@ -4,7 +4,7 @@
 
 # sainsburys-cli-mcp
 
-**CLI + MCP server for Sainsbury's grocery shopping, built for AI agents.**
+**Unofficial CLI + MCP server for Sainsbury's grocery shopping, built for AI agents.**
 Search products, manage baskets, book delivery slots, and checkout — via CLI or Model Context Protocol.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)

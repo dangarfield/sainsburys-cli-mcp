@@ -1,17 +1,17 @@
 ---
 name: sainsburys-cli-mcp
-description: Sainsbury's grocery CLI + MCP server. Search products, manage basket, book delivery, and checkout. Built for AI agents.
+description: Unofficial Sainsbury's grocery CLI + MCP server. Search products, manage basket, book delivery, and checkout. Built for AI agents.
 license: MIT
 compatibility: Node.js 18+, TypeScript, Playwright for auth. UK only (Sainsbury's delivery areas).
 metadata:
-  author: zish
+  author: dangarfield
   version: "2.0.0"
-  repository: https://github.com/abracadabra50/sainsburys-cli-mcp
+  repository: https://github.com/dangarfield/sainsburys-cli-mcp
   tags: [groceries, sainsburys, uk, shopping, automation, cli, mcp, agent-tool]
 allowed-tools: Bash({baseDir}/node:*), Bash(pnpm:run:sains:*)
 ---
 
-# Sainsbury's CLI + MCP
+# Unofficial Sainsbury's CLI + MCP
 
 CLI + MCP server for Sainsbury's UK grocery automation. Built for AI agents.
 
