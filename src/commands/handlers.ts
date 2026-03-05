@@ -5,23 +5,23 @@
  */
 
 import { ProviderFactory } from '../providers/index.js';
+import { SainsburysProvider } from '../providers/sainsburys.js';
 import { ShoppingListManager } from '../shopping-list/manager.js';
 import { CredentialsManager } from '../config/credentials.js';
 import { checkout as browserCheckout } from '../browser/checkout.js';
 import { submitMfaCode } from '../browser/session.js';
+import { CONFIG_DIR, SESSION_FILE } from '../config/paths.js';
 import * as fs from 'fs';
-import * as os from 'os';
 
 const listManager = new ShoppingListManager();
 const credentialsManager = new CredentialsManager();
 
-function getProvider() {
-  return ProviderFactory.create('sainsburys');
+function getProvider(): SainsburysProvider {
+  return ProviderFactory.create('sainsburys') as SainsburysProvider;
 }
 
 export function isLoggedIn(): boolean {
-  const sessionFile = `${os.homedir()}/.sainsburys/session.json`;
-  return fs.existsSync(sessionFile);
+  return fs.existsSync(SESSION_FILE);
 }
 
 /** Every handler returns at least { text: string } for display. */
@@ -67,7 +67,7 @@ export async function handleLogin(args: LoginArgs): Promise<HandlerResult & { su
 
   // Logout — wipe all local data (session, credentials, lists, habits, order cache)
   if (args.logout) {
-    const configDir = `${os.homedir()}/.sainsburys`;
+    const configDir = CONFIG_DIR;
     if (fs.existsSync(configDir)) {
       const files = fs.readdirSync(configDir);
       for (const file of files) {
@@ -167,7 +167,7 @@ export async function handleBasket(args: BasketArgs): Promise<HandlerResult & { 
   }
 
   // View — full basket check with habits
-  const sainsburys = provider as any;
+  const sainsburys = provider;
 
   // Auto-refresh habits from order history
   try {
@@ -260,6 +260,12 @@ export async function handleBasket(args: BasketArgs): Promise<HandlerResult & { 
         reserved_until: basket.slot.reserved_until,
       } : null,
     },
+    order_habits: habits.orderHabits.totalOrdersAnalyzed > 0 ? {
+      averageOrderFrequencyDays: habits.orderHabits.averageOrderFrequencyDays,
+      preferredDeliveryDay: habits.orderHabits.preferredDeliveryDay,
+      preferredDeliveryTime: habits.orderHabits.preferredDeliveryTime,
+      lastOrderSlotTime: listManager.getOrderHistory().orders[0]?.slot_start_time || null,
+    } : null,
     shopping_list: { items: listStatus },
     frequently_bought_uncovered: uncoveredHabits.map(h => ({
       name: h.name,
@@ -270,6 +276,29 @@ export async function handleBasket(args: BasketArgs): Promise<HandlerResult & { 
   };
 
   return { text: formatBasketView(data), data };
+}
+
+function formatSuggestedNextSlot(orderHabits: any): string {
+  if (!orderHabits?.lastOrderSlotTime || !orderHabits.averageOrderFrequencyDays) return '';
+
+  const lastSlot = new Date(orderHabits.lastOrderSlotTime);
+  const nextDate = new Date(lastSlot.getTime() + orderHabits.averageOrderFrequencyDays * 24 * 60 * 60 * 1000);
+
+  // Use preferred delivery time to set a reasonable hour
+  let hour = 7; // default morning
+  const prefTime = (orderHabits.preferredDeliveryTime || '').toLowerCase();
+  if (prefTime.includes('afternoon')) hour = 14;
+  else if (prefTime.includes('evening')) hour = 19;
+  nextDate.setHours(hour, 30, 0, 0);
+
+  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const day = nextDate.getDate();
+  const suffix = day === 1 || day === 21 || day === 31 ? 'st' : day === 2 || day === 22 ? 'nd' : day === 3 || day === 23 ? 'rd' : 'th';
+  const timeStr = nextDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  const formatted = `${dayNames[nextDate.getDay()]} ${day}${suffix} ${monthNames[nextDate.getMonth()]} ${timeStr}`;
+
+  return `\n   🔮 Suggested next delivery: ~${formatted} (every ~${orderHabits.averageOrderFrequencyDays} days from last order)`;
 }
 
 function formatBasketView(data: any): string {
@@ -285,9 +314,13 @@ function formatBasketView(data: any): string {
   } else if (hasOrder) {
     t += `📦 STATUS: SCHEDULED ORDER — Order #${data.active_order.order_uid} is placed. Call sainsburys_order_amend FIRST before modifying.\n\n`;
   } else if (hasBasketItems) {
-    t += `🛒 STATUS: BASKET — No placed order. Items are in a fresh basket.\n\n`;
+    t += `🛒 STATUS: BASKET — No placed order. Items are in a fresh basket.`;
+    t += formatSuggestedNextSlot(data.order_habits);
+    t += `\n\n`;
   } else {
-    t += `🫙 STATUS: EMPTY BASKET — No order, no items.\n\n`;
+    t += `🫙 STATUS: EMPTY BASKET — No order, no items.`;
+    t += formatSuggestedNextSlot(data.order_habits);
+    t += `\n\n`;
   }
 
   // Active order
@@ -393,7 +426,7 @@ export async function handleSlots(args: SlotsArgs): Promise<HandlerResult> {
   }
 
   if (action === 'change') {
-    const sainsburys = provider as any;
+    const sainsburys = provider;
     const slots = await sainsburys.changeSlot(args.slot_id);
 
     if (args.slot_id) {
@@ -406,7 +439,7 @@ export async function handleSlots(args: SlotsArgs): Promise<HandlerResult> {
     }
 
     let t = '📅 Available Delivery Slots (pick one to change to):\n\n';
-    t += slots.map((s: any, i: number) => {
+    t += slots.map((s, i) => {
       const available = s.available ? '✅' : '❌';
       return `${i + 1}. ${s.date} ${s.start_time}-${s.end_time}\n   £${s.price.toFixed(2)} ${available} | ID: ${s.slot_id}`;
     }).join('\n\n');
@@ -458,7 +491,7 @@ export async function handleCheckout(args: CheckoutArgs): Promise<HandlerResult>
   const result = await browserCheckout(dryRun);
 
   if (result.status === 'mfa_required') {
-    return { text: '🔐 MFA required — a 6-digit code has been sent to your phone.\nUse grocery_login with code param (MCP) or groc login --code <code> (CLI) to continue.' };
+    return { text: '🔐 MFA required — a 6-digit code has been sent to your phone.\nUse sainsburys_login with code param (MCP) or sains login --code <code> (CLI) to continue.' };
   }
   if (result.status === 'preview') {
     return { text: `🔍 Checkout Preview (dry run)\n   Basket total: £${result.total}` };
@@ -480,8 +513,7 @@ export interface OrdersArgs {
 }
 
 export async function handleOrders(args: OrdersArgs): Promise<HandlerResult> {
-  const provider = getProvider();
-  const sainsburys = provider as any;
+  const sainsburys = getProvider();
 
   // View specific order
   if (args.order_uid) {
@@ -506,7 +538,7 @@ export async function handleOrders(args: OrdersArgs): Promise<HandlerResult> {
   }
 
   // List orders
-  const orders = await provider.getOrders();
+  const orders = await sainsburys.getOrders();
   const limit = args.limit || 10;
   const limited = orders.slice(0, limit);
 
@@ -533,7 +565,7 @@ export interface AmendOrderArgs {
 }
 
 export async function handleAmendOrder(args: AmendOrderArgs): Promise<HandlerResult> {
-  const provider = getProvider() as any;
+  const provider = getProvider();
   const action = args.action || 'amend';
 
   if (action === 'cancel') {
@@ -550,7 +582,7 @@ export async function handleAmendOrder(args: AmendOrderArgs): Promise<HandlerRes
     uid = activeOrder.order.order_uid;
   }
 
-  await provider.amendOrder(uid);
+  await provider.amendOrder(uid!);
   return { text: `✅ Order #${uid} is now in amend mode. Use basket commands to modify items, then checkout to confirm.` };
 }
 
@@ -590,7 +622,7 @@ export function handleList(args: ListArgs): HandlerResult {
   // show
   const list = listManager.getShoppingList();
   if (list.items.length === 0) {
-    return { text: '📝 Shopping list is empty.\n   Add items: groc list add "semi skimmed milk"' };
+    return { text: '📝 Shopping list is empty.\n   Add items: sains list add "semi skimmed milk"' };
   }
 
   const lines = list.items.map((item, i) => {

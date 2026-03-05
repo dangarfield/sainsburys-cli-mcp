@@ -9,21 +9,7 @@
  */
 import { chromium, Browser, Page } from 'playwright';
 import * as fs from 'fs';
-import * as os from 'os';
-import * as path from 'path';
-
-const CONFIG_DIR = path.join(os.homedir(), '.sainsburys');
-const SESSION_FILE = path.join(CONFIG_DIR, 'session.json');
-const CREDENTIALS_FILE = path.join(CONFIG_DIR, 'credentials.json');
-
-/**
- * Debug mode: enabled by creating a file at ~/.sainsburys/DEBUG
- * Currently toggles Playwright headless mode (headless when debug is off, visible when on).
- * May control additional debug behaviour in future.
- */
-function isDebugMode(): boolean {
-  return fs.existsSync(path.join(CONFIG_DIR, 'DEBUG'));
-}
+import { CONFIG_DIR, SESSION_FILE, CREDENTIALS_FILE, isDebugMode, ensureConfigDir } from '../config/paths.js';
 
 const MFA_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
 
@@ -97,9 +83,7 @@ export async function saveSessionCookies(page: Page): Promise<void> {
     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     lastLogin: new Date().toISOString(),
   };
-  if (!fs.existsSync(CONFIG_DIR)) {
-    fs.mkdirSync(CONFIG_DIR, { recursive: true });
-  }
+  ensureConfigDir();
   fs.writeFileSync(SESSION_FILE, JSON.stringify(sessionData, null, 2), { mode: 0o600 });
 }
 

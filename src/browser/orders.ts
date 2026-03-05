@@ -7,10 +7,8 @@
  * Caches order details to ~/.sainsburys/order-{uid}.json
  */
 import * as fs from 'fs';
-import * as os from 'os';
 import * as path from 'path';
-
-const CONFIG_DIR = path.join(os.homedir(), '.sainsburys');
+import { CONFIG_DIR, ensureConfigDir } from '../config/paths.js';
 
 export interface OrderItem {
   name: string;
@@ -45,9 +43,7 @@ export function loadScrapedOrder(orderUid: string): ScrapedOrder | null {
 }
 
 function saveScrapedOrder(order: ScrapedOrder): void {
-  if (!fs.existsSync(CONFIG_DIR)) {
-    fs.mkdirSync(CONFIG_DIR, { recursive: true });
-  }
+  ensureConfigDir();
   fs.writeFileSync(
     getOrderFilePath(order.order_uid),
     JSON.stringify(order, null, 2),

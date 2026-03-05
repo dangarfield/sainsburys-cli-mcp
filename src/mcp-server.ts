@@ -23,7 +23,7 @@ import {
 } from './commands/handlers.js';
 
 const server = new Server(
-  { name: 'sainsburys-cli-mcp', version: '2.0.0' },
+  { name: 'sainsburys-cli-mcp', version: '3.0.0' },
   { capabilities: { tools: {} } },
 );
 
@@ -58,7 +58,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: 'sainsburys_basket',
-      description: 'Manage the Sainsbury\'s shopping basket for the weekly food shop. Also works when an order is in amend mode — the amended order acts as the basket. IMPORTANT: If there is an active order (shown by sainsburys_basket), you MUST call sainsburys_order_amend FIRST before adding items. Adding to the basket without amending will NOT modify the active order. After adding items, the user MUST checkout (sainsburys_checkout) to confirm the changes — this applies to both fresh baskets and amended orders. The default "view" action is also what users mean when they say "check my basket", "check basket", "review my shop", or "anything missing?". It automatically refreshes shopping habits from order history, then cross-references the current basket and any active order against the shopping list and past purchases. Returns: (1) active order summary, (2) current basket contents with full pricing, (3) shopping list items marked as covered or missing, (4) frequently bought products not in the current order with product IDs. The caller should semantically match missing shopping list items to frequently bought products (e.g. "cheese" matches "Sainsbury\'s Mature Cheddar 400g") and suggest them to the user with product IDs so they can be added via sainsburys_basket. IMPORTANT: Show ALL uncovered frequently bought products returned — do not filter or cherry-pick. IMPORTANT: If an active order exists and the user wants to add items, you MUST call sainsburys_order_amend FIRST to enter amend mode before calling sainsburys_basket. The active order is NOT a basket — it must be explicitly amended before modifications.',
+      description: 'Manage the Sainsbury\'s shopping basket for the weekly food shop. Also works when an order is in amend mode — the amended order acts as the basket. IMPORTANT: If there is an active order (shown by sainsburys_basket), you MUST call sainsburys_order_amend FIRST before adding items. Adding to the basket without amending will NOT modify the active order. After adding items, the user MUST checkout (sainsburys_checkout) to confirm the changes — this applies to both fresh baskets and amended orders. The default "view" action is also what users mean when they say "check my basket", "check basket", "review my shop", or "anything missing?". It automatically refreshes shopping habits from order history, then cross-references the current basket and any active order against the shopping list and past purchases. Returns: (1) a STATUS line (EMPTY BASKET, BASKET, SCHEDULED ORDER, or AMEND MODE), (2) active order summary, (3) current basket contents with full pricing, (4) shopping list items marked as covered or missing, (5) frequently bought products not in the current order with product IDs, (6) when no active order exists, a suggested next delivery date/time based on order habits. The caller should semantically match missing shopping list items to frequently bought products (e.g. "cheese" matches "Sainsbury\'s Mature Cheddar 400g") and suggest them to the user with product IDs so they can be added via sainsburys_basket. IMPORTANT: Show ALL uncovered frequently bought products returned — do not filter or cherry-pick. IMPORTANT: If an active order exists and the user wants to add items, you MUST call sainsburys_order_amend FIRST to enter amend mode before calling sainsburys_basket. The active order is NOT a basket — it must be explicitly amended before modifications.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -148,7 +148,7 @@ const toolHandlers: Record<string, (args: any) => Promise<{ text: string }> | { 
 };
 
 // Tools that don't require auth
-const noAuthTools = new Set(['sainsburys_login', 'sainsburys_list', 'sainsburys_checkout']);
+const noAuthTools = new Set(['sainsburys_login', 'sainsburys_list']);
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;

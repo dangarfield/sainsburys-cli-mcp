@@ -36,12 +36,10 @@ import axios, { AxiosInstance } from 'axios';
 import { GroceryProvider, Product, Basket, DeliverySlot, Order, SearchOptions } from './types';
 import { login } from '../auth/login';
 import { CredentialsManager } from '../config/credentials';
+import { SESSION_FILE } from '../config/paths.js';
 import * as fs from 'fs';
-import * as os from 'os';
-import * as path from 'path';
 
 const API_BASE = 'https://www.sainsburys.co.uk/groceries-api/gol-services';
-const SESSION_FILE = path.join(os.homedir(), '.sainsburys', 'session.json');
 
 export class SainsburysProvider implements GroceryProvider {
   readonly name = 'sainsburys';
@@ -96,7 +94,7 @@ export class SainsburysProvider implements GroceryProvider {
               throw error;
             }
           } else {
-            console.error('❌ Session expired. Run: groc login or groc credentials');
+            console.error('❌ Session expired. Run: sains login');
             throw error;
           }
         }
@@ -356,9 +354,9 @@ export class SainsburysProvider implements GroceryProvider {
     
     // If MFA required, can't return slots from here
     if (!Array.isArray(result)) {
-      throw new Error('MFA required — use grocery_login with code to continue.');
+      throw new Error('MFA required — use sainsburys_login with code to continue.');
     }
-    
+
     return result.map(s => ({
       slot_id: s.slot_id,
       start_time: s.start_time,
@@ -373,7 +371,7 @@ export class SainsburysProvider implements GroceryProvider {
     const { bookSlot } = await import('../browser/slots');
     const result = await bookSlot(slotId);
     if (result && typeof result === 'object' && 'status' in result) {
-      throw new Error('MFA required — use grocery_login with code to continue.');
+      throw new Error('MFA required — use sainsburys_login with code to continue.');
     }
   }
 
@@ -382,7 +380,7 @@ export class SainsburysProvider implements GroceryProvider {
     const result = await changeSlot(newSlotId);
 
     if (!Array.isArray(result)) {
-      throw new Error('MFA required — use grocery_login with code to continue.');
+      throw new Error('MFA required — use sainsburys_login with code to continue.');
     }
 
     return result.map(s => ({

@@ -1,15 +1,7 @@
 import { chromium } from 'playwright';
 import * as fs from 'fs';
-import * as path from 'path';
-import * as os from 'os';
 import * as readline from 'readline';
-
-const CONFIG_DIR = path.join(os.homedir(), '.sainsburys');
-const SESSION_FILE = path.join(CONFIG_DIR, 'session.json');
-
-function isDebugMode(): boolean {
-  return fs.existsSync(path.join(CONFIG_DIR, 'DEBUG'));
-}
+import { CONFIG_DIR, SESSION_FILE, isDebugMode, ensureConfigDir } from '../config/paths.js';
 
 export interface SessionData {
   cookies: any[];
@@ -166,10 +158,7 @@ export async function login(email: string, password: string): Promise<SessionDat
 }
 
 export function saveSession(session: SessionData) {
-  if (!fs.existsSync(CONFIG_DIR)) {
-    fs.mkdirSync(CONFIG_DIR, { recursive: true });
-  }
-  
+  ensureConfigDir();
   fs.writeFileSync(SESSION_FILE, JSON.stringify(session, null, 2), { mode: 0o600 });
   console.log(`💾 Session saved to ${SESSION_FILE}`);
 }

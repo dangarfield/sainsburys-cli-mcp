@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-import 'dotenv/config';
 import { Command } from 'commander';
 import {
   handleLogin,
@@ -18,7 +17,7 @@ const program = new Command();
 program
   .name('sains')
   .description('Sainsbury\'s grocery CLI + MCP server')
-  .version('2.0.0');
+  .version('3.0.0');
 
 function run(fn: () => Promise<any>) {
   fn().then(result => {

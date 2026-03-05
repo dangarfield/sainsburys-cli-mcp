@@ -1,9 +1,5 @@
 import * as fs from 'fs';
-import * as path from 'path';
-import * as os from 'os';
-
-const CONFIG_DIR = path.join(os.homedir(), '.sainsburys');
-const CREDENTIALS_FILE = path.join(CONFIG_DIR, 'credentials.json');
+import { CREDENTIALS_FILE, ensureConfigDir } from './paths.js';
 
 export interface Credentials {
   email: string;
@@ -12,14 +8,8 @@ export interface Credentials {
 }
 
 export class CredentialsManager {
-  private ensureConfigDir() {
-    if (!fs.existsSync(CONFIG_DIR)) {
-      fs.mkdirSync(CONFIG_DIR, { recursive: true });
-    }
-  }
-
   save(email: string, password: string) {
-    this.ensureConfigDir();
+    ensureConfigDir();
     const credentials: Credentials = {
       email,
       password,

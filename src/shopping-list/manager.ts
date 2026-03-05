@@ -1,11 +1,5 @@
 import * as fs from 'fs';
-import * as path from 'path';
-import * as os from 'os';
-
-const CONFIG_DIR = path.join(os.homedir(), '.sainsburys');
-const SHOPPING_LIST_FILE = path.join(CONFIG_DIR, 'shopping-list.json');
-const HABITS_FILE = path.join(CONFIG_DIR, 'habits.json');
-const ORDER_HISTORY_FILE = path.join(CONFIG_DIR, 'order-history.json');
+import { SHOPPING_LIST_FILE, HABITS_FILE, ORDER_HISTORY_FILE, ensureConfigDir } from '../config/paths.js';
 
 // ─── Shopping List Types ─────────────────────────────────────────
 
@@ -87,11 +81,6 @@ interface ScrapedOrderInput {
 }
 
 export class ShoppingListManager {
-  private ensureConfigDir() {
-    if (!fs.existsSync(CONFIG_DIR)) {
-      fs.mkdirSync(CONFIG_DIR, { recursive: true });
-    }
-  }
 
   // ── Shopping List ────────────────────────────────────────────
 
@@ -103,7 +92,7 @@ export class ShoppingListManager {
   }
 
   saveShoppingList(list: ShoppingList) {
-    this.ensureConfigDir();
+    ensureConfigDir();
     list.lastModified = new Date().toISOString();
     fs.writeFileSync(SHOPPING_LIST_FILE, JSON.stringify(list, null, 2), { mode: 0o600 });
   }
@@ -147,7 +136,7 @@ export class ShoppingListManager {
   }
 
   saveOrderHistory(history: OrderHistory) {
-    this.ensureConfigDir();
+    ensureConfigDir();
     history.lastFetched = new Date().toISOString();
     fs.writeFileSync(ORDER_HISTORY_FILE, JSON.stringify(history, null, 2), { mode: 0o600 });
   }
@@ -170,7 +159,7 @@ export class ShoppingListManager {
   }
 
   saveHabits(habits: Habits) {
-    this.ensureConfigDir();
+    ensureConfigDir();
     fs.writeFileSync(HABITS_FILE, JSON.stringify(habits, null, 2), { mode: 0o600 });
   }
 
