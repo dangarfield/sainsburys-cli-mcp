@@ -98,7 +98,7 @@ sains search "organic eggs" -l 5   # Limit results
 ### Basket
 
 ```bash
-sains basket                       # View basket (includes slot, shopping list, habits)
+sains basket                       # View basket (includes slot, shopping list, habits, suggested next delivery)
 sains basket add <product-id>      # Add product
 sains basket add <product-id> -q 3 # Add with quantity
 sains basket remove <product-id>   # Remove product (accepts product_uid or item_uid)
@@ -248,6 +248,7 @@ The `basket` view command automatically:
 1. Refreshes shopping habits from order history
 2. Cross-references basket against your shopping list
 3. Shows frequently bought items not in the current order
+4. When no active order exists, suggests a next delivery date/time based on your ordering habits
 
 Your agent can use this to suggest missing items and build smarter shopping lists.
 

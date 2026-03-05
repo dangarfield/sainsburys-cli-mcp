@@ -52,7 +52,7 @@ pnpm sains search "milk"
 pnpm sains search "organic eggs" -l 5
 
 # Basket
-pnpm sains basket                          # View (includes habits, shopping list, slot)
+pnpm sains basket                          # View (includes habits, shopping list, slot, suggested next delivery)
 pnpm sains basket add <product-id>         # Add
 pnpm sains basket add <product-id> -q 3    # Add with quantity
 pnpm sains basket remove <product-id>      # Remove
